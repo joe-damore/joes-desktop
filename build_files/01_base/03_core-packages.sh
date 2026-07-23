@@ -31,12 +31,6 @@ dnf5 -y copr disable jdxcode/mise
 # actually install it.
 dnf5 -y config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 
-# Enable RPMFusion
-dnf5 -y install \
-    https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-    https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-dnf5 config-manager setopt fedora-cisco-openh264.enabled=1
-
 # Make nix directories
 mkdir -p /nix
 mkdir -p /var/nix
@@ -47,3 +41,6 @@ systemctl enable libvirtd
 systemctl enable bluetooth
 systemctl enable nix.mount
 systemctl enable nix-daemon
+
+# Make zsh the default shell.
+useradd -D -s /usr/bin/zsh
