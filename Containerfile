@@ -1,5 +1,4 @@
 ARG BASE_IMAGE_MAJOR_VERSION="44"
-ARG BASE_IMAGE_ARCH="x86_64"
 ARG BASE_IMAGE_RESOLVED="quay.io/fedora/fedora-kinoite"
 
 # Allow build scripts to be referenced without being copied into the final image
@@ -8,7 +7,7 @@ COPY build_files /
 COPY system_files /system_files
 
 # Base Image
-FROM ${BASE_IMAGE_RESOLVED}:${BASE_IMAGE_MAJOR_VERSION}-${BASE_IMAGE_ARCH} AS base
+FROM ${BASE_IMAGE_RESOLVED}:${BASE_IMAGE_MAJOR_VERSION} AS base
 
 ### MODIFICATIONS
 ## make modifications desired in your image and install packages by modifying the build.sh script

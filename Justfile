@@ -93,7 +93,7 @@ sudoif command *args:
 #
 
 # Build the image using the specified parameters
-build $target_image=image_name $tag=default_tag:
+build $target_image=image_name $tag=default_tag $platform="":
     #!/usr/bin/env bash
 
     set -euox pipefail
@@ -121,6 +121,11 @@ build $target_image=image_name $tag=default_tag:
     LABELS+=("--label" "org.opencontainers.image.title={{ image_name }}")
     LABELS+=("--label" "org.opencontainers.image.vendor={{ repo_organization }}")
 
+    # Build for specific platform if one is specified
+    if [[ -n "{{ platform }}" ]]; then
+      BUILD_ARGS+=("--platform=linux/{{ platform }}")
+    fi
+
     # This actually builds the image!
     PODMAN_BUILD_ARGS=("${BUILD_ARGS[@]}" "${LABELS[@]}" --pull=newer --tag "${target_image}:${tag}" --file Containerfile)
 
@@ -147,7 +152,7 @@ rechunk $target_image=image_name $tag=default_tag:
     --tag "${target_image}:${tag}" | podman load
 
 # Split the image for smaller updates (Classical)!
-ostree-rechunk $target_image=image_name $tag=default_tag:
+ostree-rechunk $target_image=image_name $tag=default_tag $platform="":
     #!/usr/bin/env bash
 
     set -xeuo pipefail
@@ -162,9 +167,15 @@ ostree-rechunk $target_image=image_name $tag=default_tag:
     # You can use your own base image here to avoid pulling fedora-bootc
     RPM_OSTREE_CHUNKER_IMAGE="quay.io/fedora/fedora-bootc:latest"
 
+    PLATFORM_ARGS=()
+    if [[ -n "{{ platform }}" ]]; then
+        PLATFORM_ARGS+=("--platform=linux/{{ platform }}")
+    fi
+
     podman run --rm \
       --pull=newer \
       --privileged \
+      "${PLATFORM_ARGS[@]}" \
       -v "/var/lib/containers:/var/lib/containers" \
       --entrypoint /usr/bin/rpm-ostree \
       "${RPM_OSTREE_CHUNKER_IMAGE}" \
@@ -174,6 +185,36 @@ ostree-rechunk $target_image=image_name $tag=default_tag:
       --bootc \
       --from "localhost/${target_image}:${tag}" \
       --output containers-storage:"localhost/${target_image}:${tag}"
+
+# Assemble a local manifest list from per-arch image refs.
+# Usage: just manifest-create <target_image> <tag> <arch_refs...>
+manifest-create $target_image=image_name $tag=default_tag $arch_refs="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    MANIFEST_REF="${target_image}:${tag}"
+    podman manifest rm "${MANIFEST_REF}" 2>/dev/null || true
+    podman manifest create "${MANIFEST_REF}"
+
+    for ref in {{ arch_refs }}; do
+        podman manifest add "${MANIFEST_REF}" "docker://${ref}"
+    done
+
+    podman manifest inspect "${MANIFEST_REF}"
+
+
+# Push an existing local manifest list to the registry under a single tag.
+# Prints the pushed manifest digest to stdout.
+# Usage: just manifest-push <target_image> <local_tag> <remote_tag> <registry>
+manifest-push $target_image=image_name $local_tag=default_tag $remote_tag=default_tag $registry="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    podman manifest push --digestfile=/tmp/manifest-digest \
+        "${target_image}:${local_tag}" \
+        "docker://${registry}/${target_image}:${remote_tag}"
+
+    cat /tmp/manifest-digest
 
 # Generate Default Tag
 [group('Utility')]
