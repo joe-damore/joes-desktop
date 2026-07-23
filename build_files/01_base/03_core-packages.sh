@@ -41,6 +41,3 @@ systemctl enable libvirtd
 systemctl enable bluetooth
 systemctl enable nix.mount
 systemctl enable nix-daemon
-
-# Make zsh the default shell.
-useradd -D -s /usr/bin/zsh
