@@ -202,7 +202,6 @@ manifest-create $target_image=image_name $tag=default_tag $arch_refs="":
 
     podman manifest inspect "${MANIFEST_REF}"
 
-
 # Push an existing local manifest list to the registry under a single tag.
 # Prints the pushed manifest digest to stdout.
 # Usage: just manifest-push <target_image> <local_tag> <remote_tag> <registry>
