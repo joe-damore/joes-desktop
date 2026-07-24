@@ -11,3 +11,4 @@ cp -avf "/ctx/system_files"/. /
 "$ROOT_DIRECTORY/01_base/01_setup.sh"
 "$ROOT_DIRECTORY/01_base/02_flatpak.sh"
 "$ROOT_DIRECTORY/01_base/03_core-packages.sh"
+"$ROOT_DIRECTORY/01_base/99_post-install.sh"

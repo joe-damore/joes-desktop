@@ -24,3 +24,6 @@ dnf5 -y install \
   ublue-os-udev-rules \
   fedora-repos-archive \
   zstd
+
+# Replace podman provided policy.json with ublue-os one.
+mv /usr/etc/containers/policy.json /etc/containers/policy.json
