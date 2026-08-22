@@ -19,6 +19,7 @@ dnf5 -y install \
   papirus-icon-theme \
   podman-compose \
   rsms-inter-fonts \
+  ssh-audit \
   tmux \
   zsh
 
